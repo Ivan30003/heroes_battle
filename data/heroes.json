@@ -1,0 +1,20 @@
+[
+  {
+    "id": "handswing",
+    "name": "Фехтовальщик",
+    "sprite_path": "sprites/handswing.png",
+    "hp": 1000, "attack": 100, "defense": 100,
+    "dodge": 0.05, "crit": 0.10,
+    "ability_ids": ["deadly_throw", "unexpected_lunge"],
+    "passive_ids": ["innate_evasion", "counter_on_miss"]
+  },
+  {
+    "id": "smut",
+    "name": "Сварщик",
+    "sprite_path": "sprites/smut.png",
+    "hp": 1115, "attack": 84, "defense": 108,
+    "dodge": 0.0, "crit": 0.08,
+    "ability_ids": ["wine_sword", "drink"],
+    "passive_ids": ["blind_immunity", "mana_font"]
+  }
+]

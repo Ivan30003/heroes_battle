@@ -1,0 +1,126 @@
+[
+  {
+    "id": "atk_down_40_2r",
+    "family": "attack_down",
+    "name": "Сбит с толку",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "attack", "mult": -0.40 }
+  },
+  {
+    "id": "accuracy_down_30_2r",
+    "family": "accuracy_down",
+    "name": "Снижение меткости",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "accuracy_penalty", "add": 0.30 }
+  },
+  {
+    "id": "burn_120_4r",
+    "family": "burn",
+    "name": "Ожог",
+    "category": "DOT",
+    "duration_type": "ROUNDS",
+    "duration": 4,
+    "dispellable": true,
+    "stackable": true,
+    "payload": { "damage": 120, "damage_type": "burn" }
+  },
+  {
+    "id": "poison_80_3r",
+    "family": "poison",
+    "name": "Отравление",
+    "category": "DOT",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": true,
+    "payload": { "damage": 80, "damage_type": "poison" }
+  },
+  {
+    "id": "counter_80_4r",
+    "family": "counter",
+    "name": "Контрудар",
+    "category": "ON_DAMAGE_TAKEN",
+    "duration_type": "ROUNDS",
+    "duration": 4,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "reflect_percent": 0.80, "exclude": ["dot"] }
+  },
+  {
+    "id": "silence_2r",
+    "family": "silence",
+    "name": "Молчание",
+    "category": "ACTION_BLOCK",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "blocks": ["abilities"] }
+  },
+  {
+    "id": "madness_2r",
+    "family": "madness",
+    "name": "Безумие",
+    "category": "ACTION_BLOCK",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "blocks": ["player_control"], "ally_target_chance": 0.8 }
+  },
+  {
+    "id": "stun_2r",
+    "family": "stun",
+    "name": "Оглушение",
+    "category": "ACTION_BLOCK",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": false,
+    "stackable": false,
+    "payload": {
+      "blocks": ["attack", "abilities", "meditate"],
+      "damage_taken_mult": 0.40
+    }
+  },
+  {
+    "id": "damage_200_direct",
+    "family": "direct_damage",
+    "name": "Прямой урон",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 200.0 }
+  },
+  {
+    "id": "heal_10pct",
+    "family": "heal_pct",
+    "name": "Лечение",
+    "category": "INSTANT_HEAL",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 0.10 }
+  },
+  {
+    "id": "cleanse_negative",
+    "family": "cleanse",
+    "name": "Очищение",
+    "category": "INSTANT_CLEANSE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "filter": "negative" }
+  }
+]

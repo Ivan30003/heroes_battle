@@ -1,0 +1,48 @@
+[
+  {
+    "id": "deadly_throw",
+    "name": "Смертельный бросок",
+    "description": "Наносит 550% урона цели.",
+    "mana_cost": 6,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 550.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "unexpected_lunge",
+    "name": "Неожиданный выпад",
+    "description": "Цель получает -40% атаки на 2 раунда, случайный соседний враг получает 200% урона.",
+    "mana_cost": 3,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "atk_down_40_2r",      "applies_to": "primary" },
+      { "effect_id": "damage_200_direct",   "applies_to": "random_adjacent_enemy" }
+    ]
+  },
+  {
+    "id": "wine_sword",
+    "name": "Удар винным мечом",
+    "description": "Наносит 200% урона всем врагам.",
+    "mana_cost": 7,
+    "targeting": "ALL_ENEMIES",
+    "damage_percent": 200.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "drink",
+    "name": "Выпивка",
+    "description": "Восстанавливает 10% здоровья цели и снимает негативные эффекты.",
+    "mana_cost": 1,
+    "targeting": "SINGLE_ALLY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "heal_10pct",        "applies_to": "primary" },
+      { "effect_id": "cleanse_negative",  "applies_to": "primary" }
+    ]
+  }
+]
