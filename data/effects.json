@@ -29,7 +29,7 @@
     "duration_type": "ROUNDS",
     "duration": 4,
     "dispellable": true,
-    "stackable": true,
+    "stackable": false,
     "payload": { "damage": 120, "damage_type": "burn" }
   },
   {
@@ -40,7 +40,7 @@
     "duration_type": "ROUNDS",
     "duration": 3,
     "dispellable": true,
-    "stackable": true,
+    "stackable": false,
     "payload": { "damage": 80, "damage_type": "poison" }
   },
   {
