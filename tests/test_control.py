@@ -84,7 +84,17 @@ def test_controller_meditation_flow(settings, game_data):
     ctrl.update(0.016)
 
     gained = battle.heroes[actor_before].mana - mana_before
-    assert gained == 2  # только если cap не сработал; на старте мана 0
+    # В 1×1 после медитации сразу наступает конец раунда (+1 мана),
+    # поэтому дельта — 2 (медитация) или 3 (медитация + конец раунда).
+    assert gained in (2, 3)
+
+    # В логе должна быть медитация, давшая ровно +2 маны.
+    meditate_gains = [
+        e for e in ctrl.log
+        if e.type.value == "mana_gain"
+        and e.payload.get("reason") == "meditate"
+    ]
+    assert any(e.payload["amount"] == 2 for e in meditate_gains)
 
 
 def test_controller_attack_flow(settings, game_data):

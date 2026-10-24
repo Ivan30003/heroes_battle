@@ -55,9 +55,14 @@ class SimpleAI:
             targets = battle.valid_targets(actor_slot, aid)
             if not targets:
                 continue
+            heroes = [battle.hero_at(t) for t in targets]
+            heroes = [h for h in heroes if h is not None]
+            if not heroes:
+                continue
+            hurt = min(heroes, key=lambda h: h.hp / max(h.template.hp, 1))
             # лечим самого раненого союзника (в % от максимума)
-            hurt = min((battle.heroes[t] for t in targets),
-                       key=lambda h: h.hp / max(h.template.hp, 1))
+            # hurt = min((battle.heroes[t] for t in targets),
+            #            key=lambda h: h.hp / max(h.template.hp, 1))
             return Action(ActionKind.ABILITY, actor_slot,
                           ability_id=aid, target_slots=(hurt.slot,))
         return None
@@ -71,7 +76,9 @@ class SimpleAI:
             if ability.damage_percent <= 0:
                 continue
             for t in battle.valid_targets(actor_slot, aid):
-                target = battle.heroes[t]
+                target = battle.hero_at(t)
+                if target is None:
+                    continue
                 est = self._estimate_damage(battle, actor, target,
                                             ability.damage_percent)
                 if est >= target.hp:
@@ -81,8 +88,7 @@ class SimpleAI:
 
     def _find_aoe(self, battle: Battle, actor_slot: int) -> Action | None:
         actor = battle.heroes[actor_slot]
-        enemies = [h for h in battle.heroes
-                   if h.team != actor.team and h.alive]
+        enemies = [h for h in battle.heroes if h.team != actor.team and h.alive]
         if len(enemies) < 2:
             return None
         for aid in battle.available_abilities(actor_slot):
@@ -102,8 +108,11 @@ class SimpleAI:
         targets = battle.valid_targets(actor_slot)
         if not targets:
             return None
-        weakest = min((battle.heroes[t] for t in targets),
-                      key=lambda h: h.hp)
+        heroes = [battle.hero_at(t) for t in targets]
+        heroes = [h for h in heroes if h is not None]
+        if not heroes:
+            return None
+        weakest = min(heroes, key=lambda h: h.hp)
         return Action(ActionKind.ATTACK, actor_slot,
                       target_slots=(weakest.slot,))
 

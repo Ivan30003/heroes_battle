@@ -42,8 +42,12 @@ class Battle:
         for i, tpl in enumerate(bottom_heroes):
             self.heroes.append(Hero(template=tpl, team=1, slot_in_team=i, slot=5 + i))
 
-        # Группы A/B формируются ОДИН раз, до конца боя не меняются.
-        all_slots = list(range(len(self.heroes)))
+        # slot ID (0-4 - верх, 5-9 - низ) -> Hero.
+        # Обязательно для боёв меньше 5×5: list index != slot ID.
+        self._by_slot: dict[int, Hero] = {h.slot: h for h in self.heroes}
+
+        # Группы A/B теперь хранят slot ID, а не list index.
+        all_slots = [h.slot for h in self.heroes]
         self.rng.shuffle(all_slots)
         half = (len(all_slots) + 1) // 2
         self.group_a = all_slots[:half]
@@ -71,7 +75,7 @@ class Battle:
     def _start_round(self) -> list[Event]:
         self.round_number += 1
         group = self.group_a if self.round_number % 2 == 1 else self.group_b
-        alive = [s for s in group if self.heroes[s].alive]
+        alive = [s for s in group if self._by_slot[s].alive]
         self.rng.shuffle(alive)
         self.current_order = alive
         self.current_idx = -1
@@ -90,7 +94,7 @@ class Battle:
                 continue
 
             actor_slot = self.current_order[self.current_idx]
-            actor = self.heroes[actor_slot]
+            actor = self._by_slot[actor_slot]
             events.append(Event(EventType.TURN_START, {"slot": actor_slot}))
 
             if not actor.alive or is_stunned(actor):
@@ -196,8 +200,12 @@ class Battle:
             return self.current_order[self.current_idx]
         return None
 
+    def hero_at(self, slot: int) -> Hero | None:
+        """Герой по slot ID (0-4 - верх, 5-9 - низ). None если слот пуст."""
+        return self._by_slot.get(slot)
+
     def available_actions(self, actor_slot: int) -> tuple[ActionKind, ...]:
-        hero = self.heroes[actor_slot]
+        hero = self._by_slot[actor_slot]
         if not hero.alive or is_stunned(hero) or is_mad(hero):
             return ()
         if is_silenced(hero):
@@ -209,7 +217,7 @@ class Battle:
         return tuple(actions)
 
     def available_abilities(self, actor_slot: int) -> tuple[str, ...]:
-        hero = self.heroes[actor_slot]
+        hero = self._by_slot[actor_slot]
         if not hero.alive or is_stunned(hero) or is_silenced(hero) or is_mad(hero):
             return ()
         return tuple(
@@ -218,7 +226,7 @@ class Battle:
         )
 
     def valid_targets(self, actor_slot: int, ability_id: str | None = None) -> tuple[int, ...]:
-        hero = self.heroes[actor_slot]
+        hero = self._by_slot[actor_slot]
         if ability_id is None:
             return tuple(h.slot for h in self.heroes if h.team != hero.team and h.alive)
         ability = self.abilities[ability_id]
@@ -239,7 +247,7 @@ class Battle:
             raise ValueError(f"Not this hero's turn: {action.actor_slot} vs {actor_slot}")
 
         events: list[Event] = []
-        hero = self.heroes[actor_slot]
+        hero = self._by_slot[actor_slot]
 
         if is_mad(hero):
             action = self._pick_madness_action(hero)
@@ -262,7 +270,7 @@ class Battle:
     # ---------------------------------------------------------- resolution
 
     def _resolve_action(self, action: Action) -> list[Event]:
-        hero = self.heroes[action.actor_slot]
+        hero = self._by_slot[action.actor_slot]
 
         if action.kind == ActionKind.ATTACK:
             if not action.target_slots:
@@ -271,7 +279,7 @@ class Battle:
             events = [Event(EventType.ATTACK, {
                 "attacker": action.actor_slot, "target": target_slot, "percent": 100.0,
             })]
-            events.extend(self._deal_damage(hero, self.heroes[target_slot], 100.0))
+            events.extend(self._deal_damage(hero, self._by_slot[target_slot], 100.0))
             events.extend(self._gain_mana(hero, 1, reason="attack"))
             return events
 
@@ -313,12 +321,12 @@ class Battle:
 
         if ability.damage_percent > 0:
             for ts in targets:
-                events.extend(self._deal_damage(caster, self.heroes[ts], ability.damage_percent))
+                events.extend(self._deal_damage(caster, self._by_slot[ts], ability.damage_percent))
 
         for ref in ability.effect_specs:
             spec = self.effects[ref.effect_id]
             for et in self._resolve_effect_targets(caster, ref.applies_to, targets):
-                target = self.heroes[et]
+                target = self._by_slot[et]
                 if not target.alive:
                     continue
                 if spec.category == EffectCategory.INSTANT_DAMAGE:
@@ -355,7 +363,7 @@ class Battle:
             s = caster.slot_in_team + delta
             if 0 <= s <= 4:
                 slot = enemy_team * 5 + s
-                if self.heroes[slot].alive:
+                if slot in self._by_slot and self._by_slot[slot].alive:
                     result.append(slot)
         return result
 
