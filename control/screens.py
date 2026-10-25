@@ -33,8 +33,8 @@ class GameSession:
         self._battle = None
         self._controller = None
 
-    def start_battle(self):
-        # импорт здесь, чтобы не тянуть core в слой screens на этапе загрузки
+    def start_battle(self, auto_skip_animations: bool = True,
+                     ai_think_delay: float = 0.4):
         from core.battle import battle_from_data
         from control.battle_controller import BattleController
 
@@ -44,12 +44,16 @@ class GameSession:
             bottom_ids=self.bottom.hero_ids,
             seed=self.seed,
         )
-        ai_teams = set()
+        ai_teams: set[int] = set()
         if self.top.ai:
             ai_teams.add(0)
         if self.bottom.ai:
             ai_teams.add(1)
-        self._controller = BattleController(self._battle, ai_teams=ai_teams)
+        self._controller = BattleController(
+            self._battle, ai_teams=ai_teams,
+            auto_skip_animations=auto_skip_animations,
+            ai_think_delay=ai_think_delay,
+        )
         self._controller.start()
         self.screen = Screen.BATTLE
         return self._controller

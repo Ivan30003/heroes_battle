@@ -1,9 +1,10 @@
-"""M0: заглушка главного меню. Настоящее меню — в M3."""
+"""Главное меню."""
 from __future__ import annotations
 
 import pygame
 
 from view.theme import COLORS
+from view.widgets.button import Button
 
 
 class MenuScreen:
@@ -11,13 +12,35 @@ class MenuScreen:
         self.app = app
         theme = app.theme
         self.title_font = theme.font(96, bold=True)
-        self.sub_font = theme.font(36)
-        self.info_font = theme.font(26)
-        self.hint_font = theme.font(22)
+        self.sub_font = theme.font(28)
+        self.hint_font = theme.font(20)
+
+        w = app.width
+        bw, bh = 400, 90
+        bx = (w - bw) // 2
+
+        self.start_button = Button(
+            (bx, 500, bw, bh),
+            "Начать подготовку",
+            on_click=self._on_start,
+            theme=theme, font_size=30,
+        )
+        self.quit_button = Button(
+            (bx, 620, bw, bh),
+            "Выход",
+            on_click=self._on_quit,
+            theme=theme, font_size=30,
+        )
+
+    def _on_start(self) -> None:
+        self.app.start_preparation()
+
+    def _on_quit(self) -> None:
+        self.app.quit()
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        # В M0 кнопок нет; реагируем только на Esc (его ловит App.run)
-        pass
+        self.start_button.handle_event(event)
+        self.quit_button.handle_event(event)
 
     def update(self, dt: float) -> None:
         pass
@@ -29,21 +52,13 @@ class MenuScreen:
         title = self.title_font.render("Hero Battle", True, COLORS["accent"])
         surface.blit(title, title.get_rect(center=(cx, 260)))
 
-        sub = self.sub_font.render("M0 · каркас проекта собран", True, COLORS["text"])
-        surface.blit(sub, sub.get_rect(center=(cx, 380)))
+        sub = self.sub_font.render("Геройская битва", True, COLORS["text"])
+        surface.blit(sub, sub.get_rect(center=(cx, 360)))
 
-        data = self.app.game_data
-        stats = (
-            f"Загружено: героев {len(data['heroes'])}, "
-            f"способностей {len(data['abilities'])}, "
-            f"эффектов {len(data['effects'])}, "
-            f"пассивок {len(data['passives'])}"
-        )
-        info = self.info_font.render(stats, True, COLORS["text_dim"])
-        surface.blit(info, info.get_rect(center=(cx, 480)))
+        self.start_button.draw(surface)
+        self.quit_button.draw(surface)
 
         hint = self.hint_font.render(
-            "Esc — выход.  Дальнейшие экраны появятся в M3–M4.",
-            True, COLORS["text_dim"],
+            "Esc — выход", True, COLORS["text_dim"],
         )
-        surface.blit(hint, hint.get_rect(center=(cx, surface.get_height() - 80)))
+        surface.blit(hint, hint.get_rect(center=(cx, surface.get_height() - 40)))

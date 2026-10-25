@@ -48,10 +48,18 @@ class Theme:
         return self._font_cache[key]
 
     def _find_font(self, bold: bool) -> str | None:
-        if not os.path.isdir(self.fonts_dir):
-            return None
-        suffix = "bold" if bold else "regular"
-        for name in sorted(os.listdir(self.fonts_dir)):
-            if name.lower().endswith(".ttf") and suffix in name.lower():
-                return os.path.join(self.fonts_dir, name)
+        if os.path.isdir(self.fonts_dir):
+            suffix = "bold" if bold else "regular"
+            for name in sorted(os.listdir(self.fonts_dir)):
+                if name.lower().endswith(".ttf") and suffix in name.lower():
+                    return os.path.join(self.fonts_dir, name)
+        # Системный шрифт с поддержкой кириллицы
+        for family in ("dejavusans", "liberationsans", "arial",
+                       "notosans", "ubuntu", "roboto", "segoeui"):
+            try:
+                path = pygame.font.match_font(family, bold=bold)
+                if path:
+                    return path
+            except Exception:
+                pass
         return None

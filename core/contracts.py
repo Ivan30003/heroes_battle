@@ -75,9 +75,8 @@ class HeroView:
 
 @dataclass(frozen=True)
 class BattleSnapshot:
-    # По одному HeroView на каждого героя боя, в порядке self.heroes.
-    # Длина может быть меньше 10 в тестовых боях < 5×5; view в M4
-    # должен корректно отображать недостающие слоты как пустые.
+    # Всегда ровно 10 HeroView — по одному на координату слота (0..9).
+    # Пустые слоты: hero_id="", alive=False, hp=0.
     heroes: tuple[HeroView, ...]
     active_slot: int | None
     round_number: int

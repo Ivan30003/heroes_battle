@@ -361,3 +361,34 @@ def test_full_battle_terminates(settings, game_data, seed):
     assert winner in (0, 1, None)
     # Есть событие завершения боя
     assert any(e.type.value == "battle_end" for e in events)
+
+
+def test_snapshot_pads_to_10(settings, game_data):
+    """snapshot() всегда отдаёт 10 HeroView, пустые слоты — placeholder."""
+    battle = battle_from_data(
+        game_data, settings,
+        top_ids=["handswing"], bottom_ids=["smut"], seed=0,
+    )
+    battle.start()
+    snap = battle.snapshot()
+    assert len(snap.heroes) == 10
+    assert snap.heroes[0].slot == 0
+    assert snap.heroes[0].hero_id == "handswing"
+    assert snap.heroes[5].slot == 5
+    assert snap.heroes[5].hero_id == "smut"
+    for s in (1, 2, 3, 4, 6, 7, 8, 9):
+        assert snap.heroes[s].slot == s
+        assert snap.heroes[s].hero_id == ""
+        assert not snap.heroes[s].alive
+        assert snap.heroes[s].hp == 0
+
+
+def test_snapshot_full_team_has_no_placeholders(settings, game_data):
+    battle = battle_from_data(
+        game_data, settings,
+        top_ids=["handswing"] * 5, bottom_ids=["smut"] * 5, seed=0,
+    )
+    battle.start()
+    snap = battle.snapshot()
+    assert len(snap.heroes) == 10
+    assert all(h.hero_id for h in snap.heroes)
