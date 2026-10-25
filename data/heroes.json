@@ -13,7 +13,7 @@
     "name": "Сварщик",
     "sprite_path": "sprites/smut.png",
     "hp": 1115, "attack": 84, "defense": 108,
-    "dodge": 0.0, "crit": 0.08,
+    "dodge": 0.0, "crit": 0.0,
     "ability_ids": ["wine_sword", "drink"],
     "passive_ids": ["blind_immunity", "mana_font"]
   }
