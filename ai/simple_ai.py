@@ -1,4 +1,8 @@
-"""Эвристический AI. Детерминирован, никакой случайности."""
+"""Эвристический AI. Детерминирован, никакой случайности.
+
+ВАЖНО: actor_slot — это координата слота (0-4 верх, 5-9 низ).
+Доступ к герою — только через battle.hero_at(slot).
+"""
 from __future__ import annotations
 
 from core.battle import Battle
@@ -9,66 +13,52 @@ from core.stats import damage_taken_mult, effective_stat, is_mad, is_stunned
 
 class SimpleAI:
     def choose_action(self, battle: Battle, actor_slot: int) -> Action:
-        actor = battle.heroes[actor_slot]
-
-        # На всякий случай: контроллер не должен звать нас в этих состояниях,
-        # но пусть fallback будет явным.
-        if is_stunned(actor) or is_mad(actor):
+        actor = battle.hero_at(actor_slot)
+        if not actor.alive or is_stunned(actor) or is_mad(actor):
             return Action(ActionKind.MEDITATE, actor_slot)
 
         available = battle.available_actions(actor_slot)
         if not available:
             return Action(ActionKind.MEDITATE, actor_slot)
 
-        # 1) Лечимся, если HP низкое
         if ActionKind.ABILITY in available and actor.hp < actor.template.hp * 0.3:
             heal = self._find_heal(battle, actor_slot)
             if heal:
                 return heal
 
-        # 2) Добиваем, если можем
         if ActionKind.ABILITY in available:
             kill = self._find_kill(battle, actor_slot)
             if kill:
                 return kill
-
-        # 3) AoE если целей 2+
-        if ActionKind.ABILITY in available:
             aoe = self._find_aoe(battle, actor_slot)
             if aoe:
                 return aoe
 
-        # 4) Атака по самому слабому
         attack = self._attack_weakest(battle, actor_slot)
         if attack:
             return attack
 
         return Action(ActionKind.MEDITATE, actor_slot)
 
-    # ------------------------------------------------------------ helpers
-
     def _find_heal(self, battle: Battle, actor_slot: int) -> Action | None:
         for aid in battle.available_abilities(actor_slot):
-            ability = battle.abilities[aid]
             if not self._is_heal_ability(battle, aid):
                 continue
             targets = battle.valid_targets(actor_slot, aid)
             if not targets:
                 continue
-            heroes = [battle.hero_at(t) for t in targets]
-            heroes = [h for h in heroes if h is not None]
-            if not heroes:
+            ally_heroes = [battle.hero_at(t) for t in targets]
+            ally_heroes = [h for h in ally_heroes if h is not None]
+            if not ally_heroes:
                 continue
-            hurt = min(heroes, key=lambda h: h.hp / max(h.template.hp, 1))
-            # лечим самого раненого союзника (в % от максимума)
-            # hurt = min((battle.heroes[t] for t in targets),
-            #            key=lambda h: h.hp / max(h.template.hp, 1))
+            hurt = min(ally_heroes,
+                       key=lambda h: h.hp / max(h.template.hp, 1))
             return Action(ActionKind.ABILITY, actor_slot,
                           ability_id=aid, target_slots=(hurt.slot,))
         return None
 
     def _find_kill(self, battle: Battle, actor_slot: int) -> Action | None:
-        actor = battle.heroes[actor_slot]
+        actor = battle.hero_at(actor_slot)
         for aid in battle.available_abilities(actor_slot):
             ability = battle.abilities[aid]
             if ability.targeting != TargetingKind.SINGLE_ENEMY:
@@ -87,8 +77,9 @@ class SimpleAI:
         return None
 
     def _find_aoe(self, battle: Battle, actor_slot: int) -> Action | None:
-        actor = battle.heroes[actor_slot]
-        enemies = [h for h in battle.heroes if h.team != actor.team and h.alive]
+        actor = battle.hero_at(actor_slot)
+        enemies = [h for h in battle.heroes
+                   if h.team != actor.team and h.alive]
         if len(enemies) < 2:
             return None
         for aid in battle.available_abilities(actor_slot):
@@ -104,20 +95,22 @@ class SimpleAI:
                 return Action(ActionKind.ABILITY, actor_slot, ability_id=aid)
         return None
 
-    def _attack_weakest(self, battle: Battle, actor_slot: int) -> Action | None:
+    def _attack_weakest(self, battle: Battle,
+                        actor_slot: int) -> Action | None:
         targets = battle.valid_targets(actor_slot)
         if not targets:
             return None
-        heroes = [battle.hero_at(t) for t in targets]
-        heroes = [h for h in heroes if h is not None]
-        if not heroes:
+        hero_targets = [battle.hero_at(t) for t in targets]
+        hero_targets = [h for h in hero_targets if h is not None]
+        if not hero_targets:
             return None
-        weakest = min(heroes, key=lambda h: h.hp)
+        weakest = min(hero_targets, key=lambda h: h.hp)
         return Action(ActionKind.ATTACK, actor_slot,
                       target_slots=(weakest.slot,))
 
     @staticmethod
-    def _estimate_damage(battle: Battle, attacker, target, percent: float) -> float:
+    def _estimate_damage(battle: Battle, attacker, target,
+                         percent: float) -> float:
         atk = effective_stat(attacker, "attack")
         dfn = effective_stat(target, "defense")
         base = battle.NORM_CONST * (atk / max(dfn, 1.0)) * (percent / 100.0)

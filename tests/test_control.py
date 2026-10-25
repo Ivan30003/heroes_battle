@@ -78,17 +78,15 @@ def test_controller_meditation_flow(settings, game_data):
     if ctrl.state != ControllerState.WAIT_FOR_ACTION:
         pytest.skip("human hero didn't come first")
     actor_before = battle.current_actor()
-    mana_before = battle.heroes[actor_before].mana
+    mana_before = battle.hero_at(actor_before).mana
 
     assert ctrl.on_action_button(ActionKind.MEDITATE) is True
     ctrl.update(0.016)
 
-    gained = battle.heroes[actor_before].mana - mana_before
-    # В 1×1 после медитации сразу наступает конец раунда (+1 мана),
-    # поэтому дельта — 2 (медитация) или 3 (медитация + конец раунда).
+    gained = battle.hero_at(actor_before).mana - mana_before
+    # В 1×1 после медитации сразу наступает конец раунда (+1 мана):
+    # дельта — 2 (медитация) или 3 (медитация + round_end).
     assert gained in (2, 3)
-
-    # В логе должна быть медитация, давшая ровно +2 маны.
     meditate_gains = [
         e for e in ctrl.log
         if e.type.value == "mana_gain"

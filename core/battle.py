@@ -200,13 +200,19 @@ class Battle:
             return self.current_order[self.current_idx]
         return None
 
-    def hero_at(self, slot: int) -> Hero | None:
-        """Герой по slot ID (0-4 - верх, 5-9 - низ). None если слот пуст."""
+    def hero_at(self, slot: int) -> Hero:
+        """Герой по координате слота (0-4 верх, 5-9 низ).
+
+        Raises KeyError, если слот не занят (например, бой 3×3 без слота 3).
+        """
+        return self._by_slot[slot]
+
+    def hero_at_or_none(self, slot: int) -> Hero | None:
         return self._by_slot.get(slot)
 
     def available_actions(self, actor_slot: int) -> tuple[ActionKind, ...]:
-        hero = self._by_slot[actor_slot]
-        if not hero.alive or is_stunned(hero) or is_mad(hero):
+        hero = self._by_slot.get(actor_slot)
+        if hero is None or not hero.alive or is_stunned(hero) or is_mad(hero):
             return ()
         if is_silenced(hero):
             return (ActionKind.ATTACK, ActionKind.MEDITATE)
@@ -217,26 +223,34 @@ class Battle:
         return tuple(actions)
 
     def available_abilities(self, actor_slot: int) -> tuple[str, ...]:
-        hero = self._by_slot[actor_slot]
-        if not hero.alive or is_stunned(hero) or is_silenced(hero) or is_mad(hero):
+        hero = self._by_slot.get(actor_slot)
+        if hero is None or not hero.alive:
+            return ()
+        if is_stunned(hero) or is_silenced(hero) or is_mad(hero):
             return ()
         return tuple(
             aid for aid in hero.template.ability_ids
             if hero.mana >= self.abilities[aid].mana_cost
         )
 
-    def valid_targets(self, actor_slot: int, ability_id: str | None = None) -> tuple[int, ...]:
-        hero = self._by_slot[actor_slot]
+    def valid_targets(self, actor_slot: int,
+                      ability_id: str | None = None) -> tuple[int, ...]:
+        hero = self._by_slot.get(actor_slot)
+        if hero is None:
+            return ()
         if ability_id is None:
-            return tuple(h.slot for h in self.heroes if h.team != hero.team and h.alive)
+            return tuple(h.slot for h in self.heroes
+                         if h.team != hero.team and h.alive)
         ability = self.abilities[ability_id]
         t = ability.targeting
         if t == TargetingKind.SELF:
             return (actor_slot,)
         if t == TargetingKind.SINGLE_ENEMY:
-            return tuple(h.slot for h in self.heroes if h.team != hero.team and h.alive)
+            return tuple(h.slot for h in self.heroes
+                         if h.team != hero.team and h.alive)
         if t == TargetingKind.SINGLE_ALLY:
-            return tuple(h.slot for h in self.heroes if h.team == hero.team and h.alive)
+            return tuple(h.slot for h in self.heroes
+                         if h.team == hero.team and h.alive)
         return ()
 
     def apply_action(self, action: Action) -> list[Event]:
@@ -553,11 +567,29 @@ class Battle:
     # ------------------------------------------------------------ snapshot
 
     def snapshot(self) -> BattleSnapshot:
-        hero_views = tuple(self._hero_view(h) for h in self.heroes)
+        """Снимок состояния для view.
+
+        Всегда ровно 10 HeroView — по одному на каждую координату слота 0..9.
+        Пустые слоты (бой < 5×5) отдаются как placeholder:
+        hero_id="", alive=False, hp=0.
+        """
+        hero_views: list[HeroView] = []
+        for slot in range(10):
+            hero = self._by_slot.get(slot)
+            if hero is None:
+                hero_views.append(HeroView(
+                    slot=slot, hero_id="", name="",
+                    team=0 if slot < 5 else 1,
+                    hp=0, hp_max=0, mana=0, mana_max=self.MAX_MANA,
+                    alive=False, effects=(),
+                ))
+            else:
+                hero_views.append(self._hero_view(hero))
+
         active = self.current_actor()
         avail = self.available_actions(active) if active is not None else ()
         return BattleSnapshot(
-            heroes=hero_views,
+            heroes=tuple(hero_views),
             active_slot=active,
             round_number=self.round_number,
             winner_team=self._winner,

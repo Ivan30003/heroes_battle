@@ -209,18 +209,14 @@ class BattleController:
             self.state = ControllerState.BATTLE_END
             return
 
-        hero = self.battle.heroes[actor]
-
+        hero = self.battle.hero_at(actor)   # ← было self.battle.heroes[actor]
         if is_mad(hero):
-            # Core сам подменит действие на безумное.
             self._submit_action(Action(ActionKind.MEDITATE, actor))
             return
-
         if hero.team in self.ai_teams:
             self.state = ControllerState.AI_THINKING
             self._ai_think_timer = self.ai_think_delay
             return
-
         self.state = ControllerState.WAIT_FOR_ACTION
 
     def _run_ai(self) -> None:

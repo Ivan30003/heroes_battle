@@ -7,6 +7,31 @@ from core.effect import EffectSpec
 from core.hero import Hero, HeroTemplate
 
 
+def force_actor(battle, slot: int) -> None:
+    """Форсировать конкретного актора в обход Battle.start().
+
+    Зачем: Battle.start() перемешивает порядок через rng.shuffle,
+    и в 1×1 "первым ходит a или b" зависит от seed и версии Python.
+    В тестах, где нужно, чтобы атаковал именно `a` (slot=0),
+    мы просто выставляем очередь вручную.
+    """
+    if battle.round_number == 0:
+        battle.round_number = 1
+    battle.current_order = [slot]
+    battle.current_idx = 0
+
+
+def _attack(battle, actor_slot: int, target_slot: int):
+    return battle.apply_action(
+        Action(ActionKind.ATTACK, actor_slot, target_slots=(target_slot,))
+    )
+
+
+def _pvp(settings, a, b, effects=None, seed=None):
+    """Сокращение для боя 1×1: a (slot=0) vs b (slot=5)."""
+    return make_battle(settings, [a], [b], effects=effects, seed=seed)
+
+
 def make_hero(tid: str, attack: int = 100, defense: int = 100,
               hp: int = 1000, dodge: float = 0.0, crit: float = 0.0,
               abilities=(), passives=()) -> HeroTemplate:
@@ -37,24 +62,19 @@ def make_battle(settings, top, bottom, abilities=None, effects=None,
 def test_damage_basic_formula(settings):
     a = make_hero("a", attack=100, defense=100)
     b = make_hero("b", attack=100, defense=100, hp=1000)
-    battle = make_battle(settings, [a], [b])
-    battle.start()
-    actor = battle.current_actor()
-    assert actor is not None
-    battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    # NORM_CONST*100/100*100% = 100 → у b должно остаться 900
-    assert battle.heroes[1].hp == 900
+    battle = _pvp(settings, a, b)
+    force_actor(battle, slot=0)
+    _attack(battle, 0, 5)                       # a(slot=0) → b(slot=5)
+    assert battle.hero_at(5).hp == 900
 
 
 def test_damage_defense_reduces(settings):
     a = make_hero("a", attack=100)
     b = make_hero("b", defense=200, hp=1000)
-    battle = make_battle(settings, [a], [b])
-    battle.start()
-    actor = battle.current_actor()
-    battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    # 100 * 100/200 = 50
-    assert battle.heroes[1].hp == 950
+    battle = _pvp(settings, a, b)
+    force_actor(battle, slot=0)
+    _attack(battle, 0, 5)
+    assert battle.hero_at(5).hp == 950
 
 
 def test_defense_floor(settings, game_data):
@@ -83,46 +103,38 @@ def test_defense_floor(settings, game_data):
 def test_dodge_always_miss(settings):
     a = make_hero("a", attack=100)
     b = make_hero("b", dodge=1.0, hp=1000)
-    battle = make_battle(settings, [a], [b], seed=1)
-    battle.start()
-    actor = battle.current_actor()
-    events = battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    types = [e.type.value for e in events]
-    assert "miss" in types
-    assert battle.heroes[1].hp == 1000
+    battle = _pvp(settings, a, b)
+    force_actor(battle, slot=0)
+    events = _attack(battle, 0, 5)
+    assert any(e.type.value == "miss" for e in events)
+    assert battle.hero_at(5).hp == 1000
 
 
 # ------------------------------------------------------ counter_on_miss
 
 def test_counter_on_miss(settings):
-    """Фехтовальщик с 100% уклонением наносит 125% урона при промахе по нему."""
     a = make_hero("a", attack=100, crit=0.0)
     b = make_hero("b", attack=100, defense=100, dodge=1.0, hp=1000,
                   passives=("counter_on_miss",))
-    battle = make_battle(settings, [a], [b], seed=5)
-    battle.start()
-    actor = battle.current_actor()
-    events = battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    # a промахнулся, b ответил 125% → a получил 125 урона
-    assert battle.heroes[0].hp == 1000 - 125
-    assert battle.heroes[1].hp == 1000
+    battle = _pvp(settings, a, b)
+    force_actor(battle, slot=0)
+    _attack(battle, 0, 5)
+    assert battle.hero_at(0).hp == 1000 - 125
+    assert battle.hero_at(5).hp == 1000
 
 
 # -------------------------------------------------------------- отражение
 
 def test_reflection_counter(settings, game_data):
-    """Контрудар отражает 80% урона."""
     effs = {e["id"]: EffectSpec.from_dict(e) for e in game_data["effects"]}
     a = make_hero("a", attack=100, defense=100, hp=1000, crit=0.0)
     b = make_hero("b", attack=100, defense=100, hp=1000, dodge=0.0)
-    battle = make_battle(settings, [a], [b], effects=effs, seed=5)
-    battle.start()
-    battle._apply_effect(battle.heroes[1], effs["counter_80_4r"], source_slot=0)
-    actor = battle.current_actor()
-    battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    # a наносит 100 → b отражает 80 → a теряет 80
-    assert battle.heroes[0].hp == 1000 - 80
-    assert battle.heroes[1].hp == 1000 - 100
+    battle = _pvp(settings, a, b, effects=effs)
+    battle._apply_effect(battle.hero_at(5), effs["counter_80_4r"], source_slot=0)
+    force_actor(battle, slot=0)
+    _attack(battle, 0, 5)
+    assert battle.hero_at(0).hp == 1000 - 80
+    assert battle.hero_at(5).hp == 1000 - 100
 
 
 # ---------------------------------------------------- замена / стаки эффектов
@@ -182,14 +194,11 @@ def test_stun_damage_taken_mult(settings, game_data):
     effs = {e["id"]: EffectSpec.from_dict(e) for e in game_data["effects"]}
     a = make_hero("a", attack=100, defense=100, crit=0.0, hp=10000)
     b = make_hero("b", defense=100, hp=10000)
-    battle = make_battle(settings, [a], [b], effects=effs, seed=7)
-    battle.start()
-    battle._apply_effect(battle.heroes[1], effs["stun_2r"], source_slot=0)
-    actor = battle.current_actor()
-    # Стан блокирует b, но атака a не заблокирована
-    battle.apply_action(Action(ActionKind.ATTACK, actor, target_slots=(1,)))
-    # 100 урона * 1.4 = 140
-    assert battle.heroes[1].hp == 10000 - 140
+    battle = _pvp(settings, a, b, effects=effs)
+    battle._apply_effect(battle.hero_at(5), effs["stun_2r"], source_slot=0)
+    force_actor(battle, slot=0)
+    _attack(battle, 0, 5)
+    assert battle.hero_at(5).hp == 10000 - 140
 
 
 # -------------------------------------------------- mana cap + старт
@@ -251,8 +260,8 @@ def test_draw_simultaneous_dot(settings, game_data):
               duration_type=effs["burn_120_4r"].duration_type,
               duration=4, dispellable=True, stackable=False,
               payload={"damage": 120})
-    battle._apply_effect(battle.heroes[0], burn, source_slot=1)
-    battle._apply_effect(battle.heroes[1], burn, source_slot=0)
+    battle._apply_effect(battle.hero_at(0), burn, source_slot=5)
+    battle._apply_effect(battle.hero_at(5), burn, source_slot=0)
     battle._resolve_round_end()
     assert battle.is_over()
     assert battle.winner() is None
