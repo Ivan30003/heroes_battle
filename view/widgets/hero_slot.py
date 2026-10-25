@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pygame
+import math
 
 from view.theme import COLORS
 from view.widgets.draw_utils import draw_beveled_rect, octagon_points
@@ -54,7 +55,9 @@ class HeroSlotPreview:
 
 
 class HeroSlotBattle:
-    """Слот боя: портрет + имя + HP + мана + рамка активного."""
+    """Слот боя: портрет, имя, HP, мана, подсветка активного/цели, flash."""
+
+    FLASH_MAX_DURATION = 600  # мс, для расчёта fade-out
 
     def __init__(self, rect, theme, assets, bevel: int = 8):
         self.rect = pygame.Rect(rect)
@@ -70,8 +73,18 @@ class HeroSlotBattle:
         self.mana: int = 0
         self.mana_max: int = 10
         self.alive: bool = False
+
         self.is_active: bool = False
+        self.highlight_target: bool = False
         self.portrait: pygame.Surface | None = None
+
+        self._portrait_hero_id: str = ""
+        self._hero_templates: dict = {}
+        self._flash_color: tuple[int, int, int] | None = None
+        self._flash_until: int = 0
+
+    def set_hero_templates(self, templates_by_id: dict) -> None:
+        self._hero_templates = templates_by_id
 
     def update_from_view(self, hero_view) -> None:
         self.hero_id = hero_view.hero_id
@@ -83,27 +96,18 @@ class HeroSlotBattle:
         self.mana_max = max(hero_view.mana_max, 1)
         self.alive = hero_view.alive
 
-        if hero_view.hero_id:
-            idx = None
-            # найдём sprite_path из game_data через name — но проще через id
-            # (передаётся в конструкторе BattleScreen; здесь только если сменился)
-            if self._portrait_hero_id != hero_view.hero_id:
-                self.portrait = self._load_portrait(hero_view.hero_id)
-                self._portrait_hero_id = hero_view.hero_id
-        else:
-            self.portrait = None
-            self._portrait_hero_id = ""
+        if self._portrait_hero_id != hero_view.hero_id:
+            if not hero_view.hero_id:
+                self.portrait = None
+            else:
+                tpl = self._hero_templates.get(hero_view.hero_id)
+                self.portrait = (self.assets.hero_portrait(tpl["sprite_path"])
+                                 if tpl else None)
+            self._portrait_hero_id = hero_view.hero_id
 
-    _portrait_hero_id: str = ""
-
-    def _load_portrait(self, hero_id: str):
-        tpl = getattr(self, "_hero_templates", {}).get(hero_id)
-        if tpl is None:
-            return None
-        return self.assets.hero_portrait(tpl["sprite_path"])
-
-    def set_hero_templates(self, templates_by_id: dict) -> None:
-        self._hero_templates = templates_by_id
+    def set_flash(self, color: tuple[int, int, int], duration_ms: int) -> None:
+        self._flash_color = color
+        self._flash_until = pygame.time.get_ticks() + duration_ms
 
     def draw(self, surface: pygame.Surface) -> None:
         bg = COLORS["team_top"] if self.team == 0 else COLORS["team_bottom"]
@@ -112,7 +116,6 @@ class HeroSlotBattle:
         if self.portrait:
             surface.blit(self.portrait, self.rect.topleft)
 
-        # Плашка с именем сверху
         if self.hero_name:
             font = self.theme.font(14, bold=True)
             txt = font.render(self.hero_name, True, COLORS["text"])
@@ -121,7 +124,6 @@ class HeroSlotBattle:
             badge.blit(txt, (4, 2))
             surface.blit(badge, (self.rect.x, self.rect.y))
 
-        # Мана (тонкая полоса)
         mana_y = self.rect.bottom - 22
         pygame.draw.rect(surface, COLORS["mana_bg"],
                          (self.rect.x + 4, mana_y, self.rect.w - 8, 6))
@@ -131,7 +133,6 @@ class HeroSlotBattle:
                              (self.rect.x + 4, mana_y,
                               int((self.rect.w - 8) * mf), 6))
 
-        # HP (полоса над маной)
         hp_y = self.rect.bottom - 14
         pygame.draw.rect(surface, COLORS["hp_bg"],
                          (self.rect.x + 4, hp_y, self.rect.w - 8, 8))
@@ -141,13 +142,38 @@ class HeroSlotBattle:
                              (self.rect.x + 4, hp_y,
                               int((self.rect.w - 8) * hf), 8))
 
-        # Оверлей смерти
         if self.hero_id and not self.alive:
             overlay = pygame.Surface(self.rect.size, pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
             surface.blit(overlay, self.rect.topleft)
 
-        # Подсветка активного героя
+        # Flash
+        now = pygame.time.get_ticks()
+        if self._flash_color is not None:
+            if now < self._flash_until:
+                remaining = self._flash_until - now
+                alpha = int(180 * remaining / self.FLASH_MAX_DURATION)
+                alpha = max(0, min(180, alpha))
+                overlay = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+                overlay.fill((*self._flash_color, alpha))
+                surface.blit(overlay, self.rect.topleft)
+            else:
+                self._flash_color = None
+
+        # Подсветка валидной цели (пульсация)
+        if self.highlight_target and self.alive:
+            t = pygame.time.get_ticks() / 1000.0
+            pulse = (math.sin(t * 6) + 1.0) / 2.0
+            alpha = int(150 + 105 * pulse)
+            surf = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+            pygame.draw.polygon(
+                surf, (*COLORS["accent"], alpha),
+                octagon_points(pygame.Rect(0, 0, *self.rect.size), self.bevel),
+                3,
+            )
+            surface.blit(surf, self.rect.topleft)
+
+        # Рамка активного
         if self.is_active and self.alive:
             pygame.draw.polygon(surface, COLORS["accent"],
                                 octagon_points(self.rect, self.bevel), 3)
