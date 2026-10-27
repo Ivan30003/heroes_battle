@@ -157,7 +157,7 @@ def test_controller_ignores_action_in_wrong_state(settings, game_data):
 def test_controller_headless_finishes(settings, game_data):
     battle = battle_from_data(
         game_data, settings,
-        top_ids=["handswing", "smut", "handswing"],
+        top_ids=["handswing", "handswing", "handswing"],
         bottom_ids=["smut", "handswing", "smut"],
         seed=7,
     )

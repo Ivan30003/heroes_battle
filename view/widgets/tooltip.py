@@ -56,3 +56,15 @@ def draw_tooltip(surface: pygame.Surface, font: pygame.font.Font,
     for i, line in enumerate(wrapped):
         txt = font.render(line, True, COLORS["text"])
         surface.blit(txt, (x + padding, y + padding + i * line_h))
+
+
+def draw_effect_tooltip(surface, font, mouse_pos, effect_view):
+    lines = [effect_view.name,
+             f"Длительность: {effect_view.rounds_left} р."]
+    if effect_view.stacks > 1:
+        lines.append(f"Стаков: {effect_view.stacks}")
+    if effect_view.description and effect_view.description != effect_view.name:
+        lines.append("")
+        lines.append(effect_view.description)
+    draw_tooltip(surface, font, lines,
+                 (mouse_pos[0] + 15, mouse_pos[1] + 15))

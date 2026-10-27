@@ -43,7 +43,7 @@ class App:
 
     def start_battle(self) -> None:
         ctrl = self.session.start_battle(
-            auto_skip_animations=True, ai_think_delay=0.4,
+            auto_skip_animations=False, ai_think_delay=0.4,
         )
         self.switch_screen(BattleScreen(self, ctrl))
 

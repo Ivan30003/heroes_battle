@@ -118,3 +118,51 @@ def test_battle_human_cancel(settings, game_data):
     screen._on_cancel_click()
     screen.update(0.016)
     assert screen.controller.state == ControllerState.WAIT_FOR_ACTION
+
+
+def _make_screen_with_anims(settings, game_data, seed=0):
+    """auto_skip=False — анимации создаются, но не играются быстро."""
+    battle = battle_from_data(
+        game_data, settings,
+        top_ids=["handswing"] * 5,
+        bottom_ids=["smut"] * 5,
+        seed=seed,
+    )
+    ctrl = BattleController(battle, ai_teams=set(),
+                            auto_skip_animations=False)
+    ctrl.start()
+    app = _MockApp(settings, game_data)
+    return BattleScreen(app, ctrl)
+
+
+def test_battle_screen_creates_initial_animations(settings, game_data):
+    screen = _make_screen_with_anims(settings, game_data, seed=0)
+    screen.update(0.016)
+    assert screen.animations.count() > 0
+    surface = pygame.Surface((settings["game"]["screen_width"],
+                              settings["game"]["screen_height"]))
+    screen.draw(surface)
+
+
+def test_battle_screen_animations_finish_then_user_can_act(
+        settings, game_data):
+    screen = _make_screen_with_anims(settings, game_data, seed=0)
+    surface = pygame.Surface((settings["game"]["screen_width"],
+                              settings["game"]["screen_height"]))
+    for _ in range(500):
+        screen.update(0.05)
+        screen.draw(surface)
+        if screen.animations.count() == 0 and \
+           screen.controller.state == ControllerState.WAIT_FOR_ACTION:
+            break
+    assert screen.animations.count() == 0
+    assert screen.controller.state == ControllerState.WAIT_FOR_ACTION
+
+
+def test_battle_screen_skip_animation(settings, game_data):
+    screen = _make_screen_with_anims(settings, game_data, seed=0)
+    screen.update(0.016)
+    assert screen.animations.count() > 0
+    skip_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_SPACE)
+    screen.handle_event(skip_event)
+    assert screen.animations.count() == 0
