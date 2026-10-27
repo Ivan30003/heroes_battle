@@ -2,7 +2,7 @@
   {
     "id": "handswing",
     "name": "Фехтовальщик",
-    "sprite_path": "sprites/handswing.png",
+    "sprite_path": "handswing.png",
     "hp": 1000, "attack": 100, "defense": 100,
     "dodge": 0.05, "crit": 0.10,
     "ability_ids": ["deadly_throw", "unexpected_lunge"],
@@ -11,10 +11,82 @@
   {
     "id": "smut",
     "name": "Сварщик",
-    "sprite_path": "sprites/smut.png",
+    "sprite_path": "smut.png",
     "hp": 1115, "attack": 84, "defense": 108,
-    "dodge": 0.0, "crit": 0.0,
+    "dodge": 0.0, "crit": 0.08,
     "ability_ids": ["wine_sword", "drink"],
     "passive_ids": ["blind_immunity", "mana_font"]
+  },
+  {
+    "id": "mage",
+    "name": "Маг",
+    "sprite_path": "mage.png",
+    "hp": 850, "attack": 120, "defense": 70,
+    "dodge": 0.05, "crit": 0.12,
+    "ability_ids": ["fireball", "inferno"],
+    "passive_ids": ["blind_immunity", "start_mana_1"]
+  },
+  {
+    "id": "healer",
+    "name": "Жрица",
+    "sprite_path": "healer.png",
+    "hp": 950, "attack": 60, "defense": 90,
+    "dodge": 0.08, "crit": 0.05,
+    "ability_ids": ["greater_heal", "cleanse_all", "holy_smite"],
+    "passive_ids": ["start_mana_1", "innate_evasion"]
+  },
+  {
+    "id": "tank",
+    "name": "Страж",
+    "sprite_path": "tank.png",
+    "hp": 1400, "attack": 75, "defense": 140,
+    "dodge": 0.0, "crit": 0.05,
+    "ability_ids": ["shield_bash", "fortify"],
+    "passive_ids": ["blind_immunity", "innate_evasion"]
+  },
+  {
+    "id": "assassin",
+    "name": "Ассасин",
+    "sprite_path": "assassin.png",
+    "hp": 800, "attack": 110, "defense": 80,
+    "dodge": 0.15, "crit": 0.25,
+    "ability_ids": ["backstab", "poison_blade"],
+    "passive_ids": ["innate_evasion", "counter_on_miss"]
+  },
+  {
+    "id": "archer",
+    "name": "Лучница",
+    "sprite_path": "archer.png",
+    "hp": 900, "attack": 105, "defense": 85,
+    "dodge": 0.10, "crit": 0.15,
+    "ability_ids": ["piercing_shot", "multishot"],
+    "passive_ids": ["blind_immunity", "innate_evasion"]
+  },
+  {
+    "id": "necromancer",
+    "name": "Некромант",
+    "sprite_path": "necromancer.png",
+    "hp": 950, "attack": 90, "defense": 90,
+    "dodge": 0.05, "crit": 0.10,
+    "ability_ids": ["curse", "soul_burn"],
+    "passive_ids": ["start_mana_1", "mana_font"]
+  },
+  {
+    "id": "berserker",
+    "name": "Берсерк",
+    "sprite_path": "berserker.png",
+    "hp": 1050, "attack": 130, "defense": 70,
+    "dodge": 0.0, "crit": 0.20,
+    "ability_ids": ["frenzy", "cleave"],
+    "passive_ids": ["blind_immunity", "counter_on_miss"]
+  },
+  {
+    "id": "paladin",
+    "name": "Паладин",
+    "sprite_path": "paladin.png",
+    "hp": 1200, "attack": 90, "defense": 120,
+    "dodge": 0.05, "crit": 0.08,
+    "ability_ids": ["holy_light", "hammer_of_justice"],
+    "passive_ids": ["innate_evasion", "mana_font"]
   }
 ]

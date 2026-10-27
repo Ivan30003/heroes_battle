@@ -22,6 +22,28 @@
     "payload": { "stat": "accuracy_penalty", "add": 0.30 }
   },
   {
+    "id": "atk_up_30_2r",
+    "family": "attack_up",
+    "name": "Ярость",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "attack", "mult": 0.30 }
+  },
+  {
+    "id": "def_up_50_2r",
+    "family": "defense_up",
+    "name": "Укрепление",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "defense", "mult": 0.50 }
+  },
+  {
     "id": "burn_120_4r",
     "family": "burn",
     "name": "Ожог",
@@ -33,6 +55,28 @@
     "payload": { "damage": 120, "damage_type": "burn" }
   },
   {
+    "id": "burn_80_3r",
+    "family": "burn",
+    "name": "Ожог",
+    "category": "DOT",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "damage": 80, "damage_type": "burn" }
+  },
+  {
+    "id": "burn_60_3r",
+    "family": "burn",
+    "name": "Ожог",
+    "category": "DOT",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "damage": 60, "damage_type": "burn" }
+  },
+  {
     "id": "poison_80_3r",
     "family": "poison",
     "name": "Отравление",
@@ -42,6 +86,17 @@
     "dispellable": true,
     "stackable": false,
     "payload": { "damage": 80, "damage_type": "poison" }
+  },
+  {
+    "id": "poison_100_3r",
+    "family": "poison",
+    "name": "Отравление",
+    "category": "DOT",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "damage": 100, "damage_type": "poison" }
   },
   {
     "id": "counter_80_4r",
@@ -91,9 +146,34 @@
     }
   },
   {
+    "id": "stun_1r",
+    "family": "stun",
+    "name": "Оглушение",
+    "category": "ACTION_BLOCK",
+    "duration_type": "ROUNDS",
+    "duration": 1,
+    "dispellable": false,
+    "stackable": false,
+    "payload": {
+      "blocks": ["attack", "abilities", "meditate"],
+      "damage_taken_mult": 0.40
+    }
+  },
+  {
+    "id": "damage_150_direct",
+    "family": "direct_damage",
+    "name": "Прямой урон 150%",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 150.0 }
+  },
+  {
     "id": "damage_200_direct",
     "family": "direct_damage",
-    "name": "Прямой урон",
+    "name": "Прямой урон 200%",
     "category": "INSTANT_DAMAGE",
     "duration_type": "INSTANT",
     "duration": 0,
@@ -102,15 +182,70 @@
     "payload": { "percent": 200.0 }
   },
   {
+    "id": "damage_250_direct",
+    "family": "direct_damage",
+    "name": "Прямой урон 250%",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 250.0 }
+  },
+  {
+    "id": "damage_300_direct",
+    "family": "direct_damage",
+    "name": "Прямой урон 300%",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 300.0 }
+  },
+  {
+    "id": "damage_400_direct",
+    "family": "direct_damage",
+    "name": "Прямой урон 400%",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 400.0 }
+  },
+  {
     "id": "heal_10pct",
     "family": "heal_pct",
-    "name": "Лечение",
+    "name": "Лечение 10%",
     "category": "INSTANT_HEAL",
     "duration_type": "INSTANT",
     "duration": 0,
     "dispellable": false,
     "stackable": false,
     "payload": { "percent": 0.10 }
+  },
+  {
+    "id": "heal_15pct",
+    "family": "heal_pct",
+    "name": "Лечение 15%",
+    "category": "INSTANT_HEAL",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 0.15 }
+  },
+  {
+    "id": "heal_25pct",
+    "family": "heal_pct",
+    "name": "Лечение 25%",
+    "category": "INSTANT_HEAL",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "percent": 0.25 }
   },
   {
     "id": "cleanse_negative",

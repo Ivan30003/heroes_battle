@@ -18,8 +18,8 @@
     "damage_percent": 0.0,
     "cooldown": 0,
     "effect_specs": [
-      { "effect_id": "atk_down_40_2r",      "applies_to": "primary" },
-      { "effect_id": "damage_200_direct",   "applies_to": "random_adjacent_enemy" }
+      { "effect_id": "atk_down_40_2r", "applies_to": "primary" },
+      { "effect_id": "damage_200_direct", "applies_to": "random_adjacent_enemy" }
     ]
   },
   {
@@ -41,8 +41,202 @@
     "damage_percent": 0.0,
     "cooldown": 0,
     "effect_specs": [
-      { "effect_id": "heal_10pct",        "applies_to": "primary" },
-      { "effect_id": "cleanse_negative",  "applies_to": "primary" }
+      { "effect_id": "heal_10pct", "applies_to": "primary" },
+      { "effect_id": "cleanse_negative", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "fireball",
+    "name": "Огненный шар",
+    "description": "300% урона цели и поджигает её (80 ед. огня 3 раунда).",
+    "mana_cost": 4,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 300.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "burn_80_3r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "inferno",
+    "name": "Инферно",
+    "description": "120% урона всем врагам и поджигает их (60 ед. огня 3 раунда).",
+    "mana_cost": 8,
+    "targeting": "ALL_ENEMIES",
+    "damage_percent": 120.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "burn_60_3r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "greater_heal",
+    "name": "Великое исцеление",
+    "description": "Восстанавливает 25% здоровья союзнику.",
+    "mana_cost": 4,
+    "targeting": "SINGLE_ALLY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "heal_25pct", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "cleanse_all",
+    "name": "Массовое очищение",
+    "description": "Снимает все негативные эффекты со всех живых союзников.",
+    "mana_cost": 3,
+    "targeting": "ALL_ALLIES",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "cleanse_negative", "applies_to": "all_allies" }
+    ]
+  },
+  {
+    "id": "holy_smite",
+    "name": "Святой удар",
+    "description": "Наносит 250% урона цели.",
+    "mana_cost": 3,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 250.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "shield_bash",
+    "name": "Удар щитом",
+    "description": "150% урона цели и оглушение на 1 раунд.",
+    "mana_cost": 4,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 150.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "stun_1r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "fortify",
+    "name": "Укрепление",
+    "description": "Страж получает +50% защиты на 2 раунда.",
+    "mana_cost": 2,
+    "targeting": "SELF",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "def_up_50_2r", "applies_to": "self" }
+    ]
+  },
+  {
+    "id": "backstab",
+    "name": "Удар в спину",
+    "description": "Наносит 400% урона цели.",
+    "mana_cost": 5,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 400.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "poison_blade",
+    "name": "Отравленный клинок",
+    "description": "100% урона цели и отравление (100 ед. яда 3 раунда).",
+    "mana_cost": 3,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 100.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "poison_100_3r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "piercing_shot",
+    "name": "Пробивающий выстрел",
+    "description": "Наносит 300% урона цели.",
+    "mana_cost": 4,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 300.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "multishot",
+    "name": "Град стрел",
+    "description": "150% урона всем врагам.",
+    "mana_cost": 6,
+    "targeting": "ALL_ENEMIES",
+    "damage_percent": 150.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "curse",
+    "name": "Проклятие",
+    "description": "Накладывает молчание на цель на 2 раунда.",
+    "mana_cost": 3,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "silence_2r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "soul_burn",
+    "name": "Сожжение души",
+    "description": "200% урона цели и сильный ожог (120 ед. огня 4 раунда).",
+    "mana_cost": 5,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 200.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "burn_120_4r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "frenzy",
+    "name": "Бешенство",
+    "description": "Берсерк получает +30% атаки на 2 раунда.",
+    "mana_cost": 2,
+    "targeting": "SELF",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "atk_up_30_2r", "applies_to": "self" }
+    ]
+  },
+  {
+    "id": "cleave",
+    "name": "Рассечение",
+    "description": "Наносит 180% урона всем врагам.",
+    "mana_cost": 6,
+    "targeting": "ALL_ENEMIES",
+    "damage_percent": 180.0,
+    "cooldown": 0,
+    "effect_specs": []
+  },
+  {
+    "id": "holy_light",
+    "name": "Святой свет",
+    "description": "Восстанавливает 15% здоровья союзнику.",
+    "mana_cost": 2,
+    "targeting": "SINGLE_ALLY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "heal_15pct", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "hammer_of_justice",
+    "name": "Молот правосудия",
+    "description": "250% урона цели и оглушение на 1 раунд.",
+    "mana_cost": 5,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 250.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "stun_1r", "applies_to": "primary" }
     ]
   }
 ]

@@ -12,7 +12,7 @@
   },
   "paths": {
     "data": "data",
-    "sprites": "data/sprites",
+    "sprites": "data/images/heroes",
     "effect_icons": "assets/icons/effects",
     "ability_icons": "assets/icons/abilities",
     "passive_icons": "assets/icons/passives",
