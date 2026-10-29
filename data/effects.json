@@ -1,5 +1,71 @@
 [
   {
+    "id": "attack_up_45_3r",
+    "family": "attack_up",
+    "name": "Воодушевление",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "attack", "mult": 0.45 }
+  },
+  {
+    "id": "defense_up_35_3r",
+    "family": "defense_up",
+    "name": "Стойкость",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "defense", "mult": 0.35 }
+  },
+  {
+    "id": "crit_up_35_2r",
+    "family": "crit_up",
+    "name": "Точный удар",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "crit", "add": 0.35 }
+  },
+  {
+    "id": "atk_down_20_2r",
+    "family": "attack_down",
+    "name": "Сбит с толку",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "attack", "mult": -0.20 }
+  },
+  {
+    "id": "defense_up_10_2r",
+    "family": "defense_up_aura",
+    "name": "Дисциплина",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": true,
+    "payload": { "stat": "defense", "mult": 0.10 }
+  },
+  {
+    "id": "attack_up_aura_10",
+    "family": "attack_up_aura",
+    "name": "Командный дух",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 9999,
+    "dispellable": false,
+    "stackable": true,
+    "payload": { "stat": "attack", "mult": 0.10 }
+  },
+  {
     "id": "atk_down_40_2r",
     "family": "attack_down",
     "name": "Сбит с толку",

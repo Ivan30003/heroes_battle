@@ -14,8 +14,8 @@ def test_all_heroes_reference_valid_content(settings):
     for h in data["heroes"]:
         assert 1 <= len(h["ability_ids"]) <= 4, \
             f"{h['id']}: ожидалось 1..4 способности"
-        assert 1 <= len(h["passive_ids"]) <= 2, \
-            f"{h['id']}: ожидалось 1..2 пассивки"
+        assert 1 <= len(h["passive_ids"]) <= 3, \
+            f"{h['id']}: ожидалось 1..3 пассивки"
         assert h["hp"] > 0 and h["attack"] > 0 and h["defense"] > 0
         assert 0.0 <= h["dodge"] <= 1.0
         assert 0.0 <= h["crit"] <= 1.0
@@ -38,7 +38,7 @@ def test_all_effects_have_family_and_payload(settings):
 def test_all_abilities_have_mana_and_targeting(settings):
     data = load_all(settings)
     valid_targetings = {"SELF", "SINGLE_ENEMY", "ALL_ENEMIES",
-                        "SINGLE_ALLY", "ALL_ALLIES", "RANDOM_ADJACENT_ENEMY"}
+                        "SINGLE_ALLY", "ALL_ALLIES", "RANDOM_ADJACENT_ENEMY", "ADJACENT_ALLIES"}
     for a in data["abilities"]:
         assert a["mana_cost"] >= 0
         assert a["targeting"] in valid_targetings, \

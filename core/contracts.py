@@ -18,6 +18,7 @@ class TargetingKind(str, Enum):
     SINGLE_ALLY = "SINGLE_ALLY"
     ALL_ALLIES = "ALL_ALLIES"
     RANDOM_ADJACENT_ENEMY = "RANDOM_ADJACENT_ENEMY"
+    ADJACENT_ALLIES = "ADJACENT_ALLIES"
 
 
 @dataclass(frozen=True)

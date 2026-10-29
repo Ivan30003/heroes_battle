@@ -1,7 +1,7 @@
 """Герой: шаблон из JSON + состояние в бою."""
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from core.effect import Effect
@@ -41,10 +41,16 @@ class Hero:
     mana: int = 0
     effects: list["Effect"] = field(default_factory=list)
     cooldowns: dict[str, int] = field(default_factory=dict)
+    # Произвольные флаги для пассивок и временного состояния.
+    # Пример: used_ability_this_round — для discipline у Коммандора.
+    flags: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if self.hp < 0:
             self.hp = self.template.hp
+        # Гарантируем, что флаг существует с момента создания,
+        # чтобы чтение hero.flags["used_ability_this_round"] было безопасным.
+        self.flags.setdefault("used_ability_this_round", False)
 
     @property
     def alive(self) -> bool:

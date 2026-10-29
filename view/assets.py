@@ -29,6 +29,9 @@ FAMILY_COLORS: dict[str, tuple[int, int, int]] = {
     "cleanse":       (220, 220, 100),
     "direct_damage": (200,  60,  60),
     "damage_over_time": (170, 80, 220),
+    "crit_up":        (250, 200,  80),
+    "attack_up_aura": (250, 180, 100),
+    "defense_up_aura": (100, 200, 250),
 }
 
 

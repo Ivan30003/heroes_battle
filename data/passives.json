@@ -1,7 +1,10 @@
 [
-  { "id": "innate_evasion",  "name": "Врождённое уклонение" },
-  { "id": "counter_on_miss", "name": "Контратака при промахе" },
-  { "id": "blind_immunity",  "name": "Иммунитет к ослеплению" },
-  { "id": "mana_font",       "name": "Источник маны" },
-  { "id": "start_mana_1",    "name": "Стартовая мана" }
+  { "id": "innate_evasion",        "name": "Врождённое уклонение" },
+  { "id": "counter_on_miss",       "name": "Контратака при промахе" },
+  { "id": "blind_immunity",        "name": "Иммунитет к ослеплению" },
+  { "id": "mana_font",             "name": "Источник маны" },
+  { "id": "start_mana_1",          "name": "Стартовая мана" },
+  { "id": "positive_effect_heal",  "name": "Целительная энергия" },
+  { "id": "discipline",            "name": "Дисциплина" },
+  { "id": "command_aura",          "name": "Командный дух" }
 ]

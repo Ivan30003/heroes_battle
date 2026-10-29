@@ -17,6 +17,9 @@ from core.stats import (
 )
 
 
+AURA_FAMILIES = frozenset({"attack_up_aura"})
+
+
 class Battle:
     def __init__(
         self,
@@ -68,6 +71,28 @@ class Battle:
 
     def start(self) -> list[Event]:
         events = [Event(EventType.BATTLE_START, {})]
+
+        # Пассивка command_aura: на старте боя наложить ауру на всех живых
+        # союзников (включая самого командора). Аура переживёт смерть
+        # источника только до его смерти — снимается в _handle_death.
+        for hero in self.heroes:
+            if hero.alive and hero.has_passive("command_aura"):
+                spec = self.effects["attack_up_aura_10"]
+                for ally in self.heroes:
+                    if ally.team == hero.team and ally.alive:
+                        # применяем без триггера positive_effect_heal,
+                        # чтобы не было "лечения на старте"
+                        ally.effects.append(Effect(
+                            spec=spec, source_slot=hero.slot,
+                            duration_left=spec.duration,
+                        ))
+                        events.append(Event(EventType.EFFECT_APPLIED, {
+                            "slot": ally.slot,
+                            "effect_id": spec.id,
+                            "family": spec.family,
+                            "duration": spec.duration,
+                        }))
+
         events.extend(self._start_round())
         events.extend(self._advance_to_actor())
         return events
@@ -79,6 +104,8 @@ class Battle:
         self.rng.shuffle(alive)
         self.current_order = alive
         self.current_idx = -1
+        for h in self.heroes:
+            h.flags["used_ability_this_round"] = False
         return [Event(EventType.ROUND_START, {"round": self.round_number})]
 
     def _advance_to_actor(self) -> list[Event]:
@@ -151,6 +178,15 @@ class Battle:
             if hero.alive:
                 events.extend(self._gain_mana(hero, 1, reason="round_end"))
 
+        # 4.5) Round-end passives
+        for hero in self.heroes:
+            if not hero.alive:
+                continue
+            if (hero.has_passive("discipline")
+                    and not hero.flags.get("used_ability_this_round", False)):
+                events.extend(self._apply_effect(
+                    hero, self.effects["defense_up_10_2r"], hero.slot))
+
         # 5) Уменьшение длительностей
         for hero in self.heroes:
             if not hero.alive:
@@ -185,6 +221,22 @@ class Battle:
             self._winner = 0
         return True
 
+    def _handle_death(self, hero: Hero) -> list[Event]:
+        """Снять с умершего героя все эффекты и его ауры с живых союзников."""
+        events: list[Event] = []
+        hero.effects.clear()
+        for other in self.heroes:
+            if not other.alive or other.slot == hero.slot:
+                continue
+            for eff in list(other.effects):
+                if (eff.source_slot == hero.slot
+                        and eff.family in AURA_FAMILIES):
+                    other.effects.remove(eff)
+                    events.append(Event(EventType.EFFECT_EXPIRED, {
+                        "slot": other.slot, "effect_id": eff.spec.id,
+                        "family": eff.family,
+                    }))
+        return events
     # ------------------------------------------------------------------ API
 
     def is_over(self) -> bool:
@@ -309,6 +361,7 @@ class Battle:
         if hero.mana < ability.mana_cost:
             raise ValueError(f"Not enough mana: {hero.mana}/{ability.mana_cost}")
         hero.mana -= ability.mana_cost
+        hero.flags["used_ability_this_round"] = True          # ← новая строка
         events = [Event(EventType.MANA_SPENT, {
             "slot": action.actor_slot, "amount": ability.mana_cost,
         })]
@@ -329,6 +382,8 @@ class Battle:
         elif ability.targeting == TargetingKind.RANDOM_ADJACENT_ENEMY:
             adj = self._adjacent_enemies(caster)
             targets = [self.rng.choice(adj)] if adj else []
+        elif ability.targeting == TargetingKind.ADJACENT_ALLIES:      # ← новый elif
+            targets = self._adjacent_allies(caster)
         else:
             targets = list(target_slots)
         targets = sorted(targets)
@@ -381,6 +436,18 @@ class Battle:
                     result.append(slot)
         return result
 
+    def _adjacent_allies(self, caster: Hero) -> list[int]:
+        """Slot ID живых союзников на соседних слотах (slot_in_team +-1)."""
+        result = []
+        for delta in (-1, 1):
+            s = caster.slot_in_team + delta
+            if 0 <= s <= 4:
+                slot = caster.team * 5 + s
+                h = self._by_slot.get(slot)
+                if h is not None and h.alive:
+                    result.append(slot)
+        return result
+
     def _deal_damage(self, attacker: Hero, target: Hero, percent: float,
                      is_reflected: bool = False, is_counter: bool = False) -> list[Event]:
         events: list[Event] = []
@@ -421,7 +488,7 @@ class Battle:
 
         if not target.alive:
             events.append(Event(EventType.DEATH, {"slot": target.slot}))
-            target.effects.clear()
+            events.extend(self._handle_death(target))
             return events
 
         # Отражение (не для отражёнки, не для мёртвого атакующего)
@@ -441,7 +508,7 @@ class Battle:
                     }))
                     if not attacker.alive:
                         events.append(Event(EventType.DEATH, {"slot": attacker.slot}))
-                        attacker.effects.clear()
+                        events.extend(self._handle_death(attacker))
         return events
 
     def _heal(self, source: Hero, target: Hero, amount: int) -> list[Event]:
@@ -482,21 +549,29 @@ class Battle:
         if not target.alive:
             return events
 
-        # Unstackable — новый вытесняет все эффекты того же семейства
         if not spec.stackable:
             for eff in list(target.effects):
                 if eff.family == spec.family:
                     target.effects.remove(eff)
                     events.append(Event(EventType.EFFECT_REPLACED, {
-                        "slot": target.slot, "effect_id": eff.spec.id, "family": eff.family,
+                        "slot": target.slot, "effect_id": eff.spec.id,
+                        "family": eff.family,
                     }))
 
         target.effects.append(Effect(spec=spec, source_slot=source_slot,
                                      duration_left=spec.duration))
         events.append(Event(EventType.EFFECT_APPLIED, {
-            "slot": target.slot, "effect_id": spec.id, "family": spec.family,
-            "duration": spec.duration,
+            "slot": target.slot, "effect_id": spec.id,
+            "family": spec.family, "duration": spec.duration,
         }))
+
+        # Пассивка positive_effect_heal: любой положительный эффект на герое
+        # лечит его на 5% от макс. HP.
+        if (target.has_passive("positive_effect_heal")
+                and self._is_buff(spec)):
+            heal_amount = max(1, int(target.template.hp * 0.05))
+            events.extend(self._heal(target, target, heal_amount))
+
         return events
 
     def _gain_mana(self, hero: Hero, amount: int, reason: str = "") -> list[Event]:

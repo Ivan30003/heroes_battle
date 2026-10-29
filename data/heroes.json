@@ -1,5 +1,14 @@
 [
   {
+    "id": "commander",
+    "name": "Коммандор",
+    "sprite_path": "commander.png",
+    "hp": 855, "attack": 110, "defense": 112,
+    "dodge": 0.0, "crit": 0.02,
+    "ability_ids": ["commander_rally", "commander_rally_crit"],
+    "passive_ids": ["positive_effect_heal", "discipline", "command_aura"]
+  },
+  {
     "id": "handswing",
     "name": "Фехтовальщик",
     "sprite_path": "handswing.png",

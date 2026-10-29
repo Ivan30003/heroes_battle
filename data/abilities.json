@@ -1,5 +1,31 @@
 [
   {
+    "id": "commander_rally",
+    "name": "Воодушевляющий клич",
+    "description": "Даёт всем союзникам +45% атаки и +35% защиты на 3 раунда.",
+    "mana_cost": 8,
+    "targeting": "ALL_ALLIES",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "attack_up_45_3r",  "applies_to": "all_allies" },
+      { "effect_id": "defense_up_35_3r", "applies_to": "all_allies" }
+    ]
+  },
+  {
+    "id": "commander_rally_crit",
+    "name": "Боевой приказ",
+    "description": "Даёт соседним союзникам +35% крита на 2 раунда, но сам Коммандор получает -20% атаки на 2 раунда.",
+    "mana_cost": 3,
+    "targeting": "ADJACENT_ALLIES",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "crit_up_35_2r",  "applies_to": "primary" },
+      { "effect_id": "atk_down_20_2r", "applies_to": "self" }
+    ]
+  },
+  {
     "id": "deadly_throw",
     "name": "Смертельный бросок",
     "description": "Наносит 550% урона цели.",
