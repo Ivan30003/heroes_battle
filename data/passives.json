@@ -1,4 +1,5 @@
 [
+  { "id": "jinx", "name": "Сглаз" },
   { "id": "innate_evasion",        "name": "Врождённое уклонение" },
   { "id": "counter_on_miss",       "name": "Контратака при промахе" },
   { "id": "blind_immunity",        "name": "Иммунитет к ослеплению" },

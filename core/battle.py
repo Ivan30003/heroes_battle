@@ -13,7 +13,7 @@ from core.ability import AbilityTemplate
 from core.effect import Effect, EffectSpec, EffectCategory
 from core.stats import (
     effective_stat, accuracy_penalty_eff, damage_taken_mult,
-    is_stunned, is_silenced, is_mad,
+    is_stunned, is_silenced, is_mad, is_positive_effect,
 )
 
 
@@ -399,8 +399,17 @@ class Battle:
                 if not target.alive:
                     continue
                 if spec.category == EffectCategory.INSTANT_DAMAGE:
-                    events.extend(self._deal_damage(caster, target,
-                                                    float(spec.payload["percent"])))
+                    if "percent" in spec.payload:
+                        events.extend(self._deal_damage(
+                            caster, target, float(spec.payload["percent"])))
+                    elif "damage" in spec.payload:
+                        events.extend(self._deal_damage(
+                            caster, target, 0.0,
+                            fixed_amount=int(spec.payload["damage"])))
+                    else:
+                        raise ValueError(
+                            f"INSTANT_DAMAGE effect {spec.id}: "
+                            f"нужен ключ 'percent' или 'damage' в payload")
                 elif spec.category == EffectCategory.INSTANT_HEAL:
                     amount = int(target.template.hp * float(spec.payload["percent"]))
                     events.extend(self._heal(caster, target, amount))
@@ -449,7 +458,8 @@ class Battle:
         return result
 
     def _deal_damage(self, attacker: Hero, target: Hero, percent: float,
-                     is_reflected: bool = False, is_counter: bool = False) -> list[Event]:
+                     is_reflected: bool = False, is_counter: bool = False,
+                     fixed_amount: int | None = None) -> list[Event]:
         events: list[Event] = []
         if not target.alive:
             return events
@@ -464,22 +474,37 @@ class Battle:
                     "attacker": attacker.slot, "target": target.slot,
                 }))
                 if target.has_passive("counter_on_miss") and not is_reflected:
-                    events.extend(self._deal_damage(target, attacker, 125.0, is_counter=True))
+                    events.extend(self._deal_damage(target, attacker, 125.0,
+                                                    is_counter=True))
                 return events
 
-        # Крит
+        # Крит — только для нефиксированного урона
         crit = False
-        if not is_reflected and not is_counter:
+        if fixed_amount is None and not is_reflected and not is_counter:
             crit = self.rng.random() < effective_stat(attacker, "crit")
 
-        atk = effective_stat(attacker, "attack")
-        dfn = effective_stat(target, "defense")
-        base = self.NORM_CONST * (atk / max(dfn, 1.0)) * (percent / 100.0)
-        if crit:
-            base *= 2.0
-        base *= (1.0 + damage_taken_mult(target))
-        damage = max(1, int(base))
+        if fixed_amount is not None:
+            base = float(fixed_amount)
+        else:
+            atk = effective_stat(attacker, "attack")
+            dfn = effective_stat(target, "defense")
+            base = self.NORM_CONST * (atk / max(dfn, 1.0)) * (percent / 100.0)
+            if crit:
+                base *= 2.0
 
+        base *= (1.0 + damage_taken_mult(target))
+
+        # Пассивка jinx: +5% финального урона за каждый положительный эффект
+        # на цели. Работает и для обычных атак, и для способностей, и для
+        # фиксированного урона. Отражённый урон — это входящий для атакующего,
+        # поэтому не бустим.
+        if not is_reflected and attacker.has_passive("jinx"):
+            positive_count = sum(
+                1 for e in target.effects if is_positive_effect(e.spec)
+            )
+            base *= (1.0 + 0.05 * positive_count)
+
+        damage = max(1, int(base))
         target.hp -= damage
         events.append(Event(EventType.DAMAGE, {
             "source": attacker.slot, "target": target.slot,
@@ -491,7 +516,7 @@ class Battle:
             events.extend(self._handle_death(target))
             return events
 
-        # Отражение (не для отражёнки, не для мёртвого атакующего)
+        # Отражение
         if not is_reflected and target.alive:
             for eff in list(target.effects):
                 if eff.spec.category != EffectCategory.ON_DAMAGE_TAKEN:
@@ -507,7 +532,8 @@ class Battle:
                         "amount": reflect_amt, "crit": False, "reflected": True,
                     }))
                     if not attacker.alive:
-                        events.append(Event(EventType.DEATH, {"slot": attacker.slot}))
+                        events.append(Event(EventType.DEATH,
+                                            {"slot": attacker.slot}))
                         events.extend(self._handle_death(attacker))
         return events
 
@@ -693,14 +719,7 @@ class Battle:
         )
 
     def _is_buff(self, spec: EffectSpec) -> bool:
-        if spec.category == EffectCategory.INSTANT_HEAL:
-            return True
-        if spec.category in (EffectCategory.DOT, EffectCategory.ACTION_BLOCK):
-            return False
-        if spec.category == EffectCategory.STAT_MOD:
-            return all(v >= 0 for v in spec.payload.values()
-                       if isinstance(v, (int, float)))
-        return True
+        return is_positive_effect(spec)
 
 
 def battle_from_data(game_data: dict, settings: dict[str, Any],

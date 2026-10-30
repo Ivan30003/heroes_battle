@@ -1,5 +1,42 @@
 [
   {
+    "id": "ice_explosion",
+    "name": "Ледяной взрыв",
+    "description": "Наносит 250% урона всем врагам и снижает их защиту на 40% на 4 раунда.",
+    "mana_cost": 10,
+    "targeting": "ALL_ENEMIES",
+    "damage_percent": 250.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "defense_down_40_4r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "acid_dart",
+    "name": "Кислотный дротик",
+    "description": "Наносит 60% урона цели и устанавливает её защиту ровно на 70 на 2 раунда.",
+    "mana_cost": 4,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 60.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "defense_set_70_2r", "applies_to": "primary" }
+    ]
+  },
+  {
+    "id": "distortion_curse",
+    "name": "Искажающее проклятие",
+    "description": "Наносит ровно 150 урона цели (независимо от атаки и защиты) и накладывает молчание на 2 раунда.",
+    "mana_cost": 5,
+    "targeting": "SINGLE_ENEMY",
+    "damage_percent": 0.0,
+    "cooldown": 0,
+    "effect_specs": [
+      { "effect_id": "damage_150_fixed", "applies_to": "primary" },
+      { "effect_id": "silence_2r",       "applies_to": "primary" }
+    ]
+  },
+  {
     "id": "commander_rally",
     "name": "Воодушевляющий клич",
     "description": "Даёт всем союзникам +45% атаки и +35% защиты на 3 раунда.",

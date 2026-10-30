@@ -1,5 +1,49 @@
 [
   {
+    "id": "defense_down_40_4r",
+    "family": "defense_down",
+    "name": "Ледяное ослабление",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 4,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "defense", "mult": -0.40 }
+  },
+  {
+    "id": "defense_up_2_2r",
+    "family": "defense_up",
+    "name": "Стойкость",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 3,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "defense", "mult": 0.02 }
+  },
+  {
+    "id": "defense_set_70_2r",
+    "family": "defense_set",
+    "name": "Разъедание брони",
+    "category": "STAT_MOD",
+    "duration_type": "ROUNDS",
+    "duration": 2,
+    "dispellable": true,
+    "stackable": false,
+    "payload": { "stat": "defense", "set": 70 }
+  },
+  {
+    "id": "damage_150_fixed",
+    "family": "direct_damage",
+    "name": "Фиксированный урон 150",
+    "category": "INSTANT_DAMAGE",
+    "duration_type": "INSTANT",
+    "duration": 0,
+    "dispellable": false,
+    "stackable": false,
+    "payload": { "damage": 150 }
+  },
+  {
     "id": "attack_up_45_3r",
     "family": "attack_up",
     "name": "Воодушевление",

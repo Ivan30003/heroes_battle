@@ -1,5 +1,14 @@
 [
   {
+    "id": "spooky_mage",
+    "name": "Жуткий маг",
+    "sprite_path": "spooky_mage.png",
+    "hp": 918, "attack": 126, "defense": 86,
+    "dodge": 0.0, "crit": 0.01,
+    "ability_ids": ["ice_explosion", "acid_dart", "distortion_curse"],
+    "passive_ids": ["jinx"]
+  },
+  {
     "id": "commander",
     "name": "Коммандор",
     "sprite_path": "commander.png",
